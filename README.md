@@ -27,14 +27,26 @@ balloon是带有mask的气球数据集，其中训练集包含61张图片，验�
 
 |        Model        |  bbox_mAP (%) |
 | :-----------------: |  :-------: |
-| mask_rcnn(r50fpn_fp16_1x) |   58.56   |
+| mask_rcnn(r50fpn_fp16_1x) |   76.58   |
+### 更新
+看了看同学的脚本，写得比我好，我更新一下
+
+https://github.com/aso538/OpenMMLab_AI_camp_work/blob/main/basic_wor_2/color_splash.py
  
 checkpoints link: 链接：https://pan.baidu.com/s/1pIos1OEFuJSTX6prDxBhSQ 提取码：gbpy 
-vedio link: 链接：https://pan.baidu.com/s/1voH3W2HPgktmGXw7-9JV6w 提取码：623n 
 
+vedio link: 链接：https://pan.baidu.com/s/1pT2J4fNab7kMlIdiYd0Lrg 提取码：0hn1 
 
 ## 进阶实验
 我们鼓励同学们使用mmdetection完成自己的项目，为此我们提供以下数据集给同学们使用，也欢迎同学们使用自己的数据集基于mmdetection做项目。完成3次进阶作业的同学可以获得额外积分激励。
 
 🔎目标检测数据集：PASCAL VOC2007：https://opendatalab.org.cn/PASCAL_VOC2012 835M
 
+## 实验设备
+NVIDIA GeForce RTX 3090 *2
+
+|        Model        |  bbox_mAP (%) |
+| :-----------------: |  :-------: |
+| mask_rcnn(r50fpn_fp16_1x) |   84.4   |
+
+checkpoints link:链接：https://pan.baidu.com/s/1uLdHOg_UAZoVbTz7mxns5A 提取码：f02n 
