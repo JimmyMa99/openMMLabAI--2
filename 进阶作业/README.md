@@ -8,6 +8,6 @@ NVIDIA GeForce RTX 3090 *2
 
 |        Model        |  bbox_mAP (%) |
 | :-----------------: |  :-------: |
-| mask_rcnn(r50fpn_fp16_1x) |   84.4   |
+| Efficientnet-b3 |   84.4   |
 
 checkpoints link:链接：https://pan.baidu.com/s/1uLdHOg_UAZoVbTz7mxns5A 提取码：f02n 
