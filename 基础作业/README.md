@@ -29,3 +29,7 @@ https://github.com/aso538/OpenMMLab_AI_camp_work/blob/main/basic_wor_2/color_spl
 checkpoints link: 链接：https://pan.baidu.com/s/1pIos1OEFuJSTX6prDxBhSQ 提取码：gbpy 
 
 vedio link: 链接：https://pan.baidu.com/s/1pT2J4fNab7kMlIdiYd0Lrg 提取码：0hn1 
+
+- gif效果图
+
+![效果图](https://github.com/JimmyMa99/openMMLabAI--2/blob/e038cbf83c276429480daea3a799ec163b8c87e3/%E5%9F%BA%E7%A1%80%E4%BD%9C%E4%B8%9A/color_splash%2000_00_00-00_00_30.gif)
