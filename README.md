@@ -37,6 +37,10 @@ checkpoints link: 链接：https://pan.baidu.com/s/1pIos1OEFuJSTX6prDxBhSQ 提�
 
 vedio link: 链接：https://pan.baidu.com/s/1pT2J4fNab7kMlIdiYd0Lrg 提取码：0hn1 
 
+- gif效果图
+
+![效果图](https://github.com/JimmyMa99/openMMLabAI--2/blob/e038cbf83c276429480daea3a799ec163b8c87e3/%E5%9F%BA%E7%A1%80%E4%BD%9C%E4%B8%9A/color_splash%2000_00_00-00_00_30.gif)
+
 ## 进阶实验
 我们鼓励同学们使用mmdetection完成自己的项目，为此我们提供以下数据集给同学们使用，也欢迎同学们使用自己的数据集基于mmdetection做项目。完成3次进阶作业的同学可以获得额外积分激励。
 
