@@ -43,7 +43,7 @@ vedio link: 链接：https://pan.baidu.com/s/1pT2J4fNab7kMlIdiYd0Lrg 提取码�
 
 - gif自己录视频效果图
 
-![自己录视频效果](https://github.com/JimmyMa99/openMMLabAI--2/blob/main/%E5%9F%BA%E7%A1%80%E4%BD%9C%E4%B8%9A/my_color_splash.gif)
+![自己录视频效果]([基础作业/my_color_splash.gif](https://github.com/JimmyMa99/openMMLabAI--2/blob/abde0454b15d8ace43b106bab057824818378dd8/%E5%9F%BA%E7%A1%80%E4%BD%9C%E4%B8%9A/my_color_splash.gif))
 
 由于存在某些帧未能检测到balloon的情况，对此对脚本进行了修正，并加入了进度条
 
