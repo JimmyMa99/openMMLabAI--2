@@ -1,0 +1,1280 @@
+2023-02-08 11:38:19,962 - mmdet - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.10.9 (main, Jan 11 2023, 15:21:40) [GCC 11.2.0]
+CUDA available: True
+GPU 0: NVIDIA GeForce GTX 1080 Ti
+CUDA_HOME: /usr/local/cuda
+NVCC: Cuda compilation tools, release 11.3, V11.3.109
+GCC: gcc (Ubuntu 9.4.0-1ubuntu1~20.04.1) 9.4.0
+PyTorch: 1.12.1+cu102
+PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) Math Kernel Library Version 2020.0.0 Product Build 20191122 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v2.6.0 (Git Hash 52b5f107dd9cf10910aaa19cb47f3abf9b349815)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 10.2
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70
+  - CuDNN 7.6.5
+  - Magma 2.5.2
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=10.2, CUDNN_VERSION=7.6.5, CXX_COMPILER=/opt/rh/devtoolset-7/root/usr/bin/c++, CXX_FLAGS= -fabi-version=11 -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.12.1, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=OFF, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, 
+
+TorchVision: 0.13.1+cu102
+OpenCV: 4.6.0
+MMCV: 1.7.0
+MMCV Compiler: GCC 7.3
+MMCV CUDA Compiler: 10.2
+MMDetection: 2.28.0+1b7d778
+------------------------------------------------------------
+
+2023-02-08 11:38:20,321 - mmdet - INFO - Distributed training: False
+2023-02-08 11:38:20,697 - mmdet - INFO - Config:
+model = dict(
+    type='MaskRCNN',
+    backbone=dict(
+        type='ResNet',
+        depth=50,
+        num_stages=4,
+        out_indices=(0, 1, 2, 3),
+        frozen_stages=1,
+        norm_cfg=dict(type='BN', requires_grad=True),
+        norm_eval=True,
+        style='pytorch',
+        init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet50')),
+    neck=dict(
+        type='FPN',
+        in_channels=[256, 512, 1024, 2048],
+        out_channels=256,
+        num_outs=5),
+    rpn_head=dict(
+        type='RPNHead',
+        in_channels=256,
+        feat_channels=256,
+        anchor_generator=dict(
+            type='AnchorGenerator',
+            scales=[8],
+            ratios=[0.5, 1.0, 2.0],
+            strides=[4, 8, 16, 32, 64]),
+        bbox_coder=dict(
+            type='DeltaXYWHBBoxCoder',
+            target_means=[0.0, 0.0, 0.0, 0.0],
+            target_stds=[1.0, 1.0, 1.0, 1.0]),
+        loss_cls=dict(
+            type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0),
+        loss_bbox=dict(type='L1Loss', loss_weight=1.0)),
+    roi_head=dict(
+        type='StandardRoIHead',
+        bbox_roi_extractor=dict(
+            type='SingleRoIExtractor',
+            roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
+            out_channels=256,
+            featmap_strides=[4, 8, 16, 32]),
+        bbox_head=dict(
+            type='Shared2FCBBoxHead',
+            in_channels=256,
+            fc_out_channels=1024,
+            roi_feat_size=7,
+            num_classes=1,
+            bbox_coder=dict(
+                type='DeltaXYWHBBoxCoder',
+                target_means=[0.0, 0.0, 0.0, 0.0],
+                target_stds=[0.1, 0.1, 0.2, 0.2]),
+            reg_class_agnostic=False,
+            loss_cls=dict(
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
+            loss_bbox=dict(type='L1Loss', loss_weight=1.0)),
+        mask_roi_extractor=dict(
+            type='SingleRoIExtractor',
+            roi_layer=dict(type='RoIAlign', output_size=14, sampling_ratio=0),
+            out_channels=256,
+            featmap_strides=[4, 8, 16, 32]),
+        mask_head=dict(
+            type='FCNMaskHead',
+            num_convs=4,
+            in_channels=256,
+            conv_out_channels=256,
+            num_classes=1,
+            loss_mask=dict(
+                type='CrossEntropyLoss', use_mask=True, loss_weight=1.0))),
+    train_cfg=dict(
+        rpn=dict(
+            assigner=dict(
+                type='MaxIoUAssigner',
+                pos_iou_thr=0.7,
+                neg_iou_thr=0.3,
+                min_pos_iou=0.3,
+                match_low_quality=True,
+                ignore_iof_thr=-1),
+            sampler=dict(
+                type='RandomSampler',
+                num=256,
+                pos_fraction=0.5,
+                neg_pos_ub=-1,
+                add_gt_as_proposals=False),
+            allowed_border=-1,
+            pos_weight=-1,
+            debug=False),
+        rpn_proposal=dict(
+            nms_pre=2000,
+            max_per_img=1000,
+            nms=dict(type='nms', iou_threshold=0.7),
+            min_bbox_size=0),
+        rcnn=dict(
+            assigner=dict(
+                type='MaxIoUAssigner',
+                pos_iou_thr=0.5,
+                neg_iou_thr=0.5,
+                min_pos_iou=0.5,
+                match_low_quality=True,
+                ignore_iof_thr=-1),
+            sampler=dict(
+                type='RandomSampler',
+                num=512,
+                pos_fraction=0.25,
+                neg_pos_ub=-1,
+                add_gt_as_proposals=True),
+            mask_size=28,
+            pos_weight=-1,
+            debug=False)),
+    test_cfg=dict(
+        rpn=dict(
+            nms_pre=1000,
+            max_per_img=1000,
+            nms=dict(type='nms', iou_threshold=0.7),
+            min_bbox_size=0),
+        rcnn=dict(
+            score_thr=0.05,
+            nms=dict(type='nms', iou_threshold=0.5),
+            max_per_img=100,
+            mask_thr_binary=0.5)))
+dataset_type = 'CocoDataset'
+data_root = 'dataset/balloon'
+CLASSES = ('balloon', )
+img_norm_cfg = dict(
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
+    dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
+    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(
+        type='Normalize',
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        to_rgb=True),
+    dict(type='Pad', size_divisor=32),
+    dict(type='DefaultFormatBundle'),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks'])
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(1333, 800),
+        flip=False,
+        transforms=[
+            dict(type='Resize', keep_ratio=True),
+            dict(type='RandomFlip'),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='ImageToTensor', keys=['img']),
+            dict(type='Collect', keys=['img'])
+        ])
+]
+data = dict(
+    samples_per_gpu=4,
+    workers_per_gpu=1,
+    train=dict(
+        type='CocoDataset',
+        ann_file='dataset/balloon/train/train.json',
+        img_prefix='dataset/balloon/train/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
+            dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
+            dict(type='RandomFlip', flip_ratio=0.5),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(
+                type='Collect',
+                keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks'])
+        ]),
+    val=dict(
+        type='CocoDataset',
+        ann_file='dataset/balloon/val/val.json',
+        img_prefix='dataset/balloon/val/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(1333, 800),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]),
+    test=dict(
+        type='CocoDataset',
+        ann_file='dataset/balloon/val/val.json',
+        img_prefix='dataset/balloon/val/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(1333, 800),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]))
+evaluation = dict(metric=['bbox', 'segm'])
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+optimizer_config = dict(grad_clip=None)
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=500,
+    warmup_ratio=0.001,
+    step=[8, 11])
+runner = dict(type='EpochBasedRunner', max_epochs=10)
+checkpoint_config = dict(interval=2)
+log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
+custom_hooks = [dict(type='NumClassCheckHook')]
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = 'pretrained/mask_rcnn_r50_fpn_1x_coco_20200205-d4b0c5d6.pth'
+resume_from = None
+workflow = [('train', 1)]
+opencv_num_threads = 0
+mp_start_method = 'fork'
+auto_scale_lr = dict(enable=False, base_batch_size=16)
+work_dir = 'new_mrcnn'
+auto_resume = False
+gpu_ids = [0]
+
+2023-02-08 11:38:20,698 - mmdet - INFO - Set random seed to 1208830379, deterministic: False
+2023-02-08 11:38:21,251 - mmdet - INFO - initialize ResNet with init_cfg {'type': 'Pretrained', 'checkpoint': 'torchvision://resnet50'}
+2023-02-08 11:38:21,391 - mmdet - INFO - initialize FPN with init_cfg {'type': 'Xavier', 'layer': 'Conv2d', 'distribution': 'uniform'}
+2023-02-08 11:38:21,416 - mmdet - INFO - initialize RPNHead with init_cfg {'type': 'Normal', 'layer': 'Conv2d', 'std': 0.01}
+2023-02-08 11:38:21,422 - mmdet - INFO - initialize Shared2FCBBoxHead with init_cfg [{'type': 'Normal', 'std': 0.01, 'override': {'name': 'fc_cls'}}, {'type': 'Normal', 'std': 0.001, 'override': {'name': 'fc_reg'}}, {'type': 'Xavier', 'distribution': 'uniform', 'override': [{'name': 'shared_fcs'}, {'name': 'cls_fcs'}, {'name': 'reg_fcs'}]}]
+Name of parameter - Initialization information
+
+backbone.conv1.weight - torch.Size([64, 3, 7, 7]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.conv1.weight - torch.Size([64, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.downsample.0.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.downsample.1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.0.downsample.1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.conv1.weight - torch.Size([64, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.1.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.conv1.weight - torch.Size([64, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn1.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn1.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.conv2.weight - torch.Size([64, 64, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn2.weight - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn2.bias - torch.Size([64]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.conv3.weight - torch.Size([256, 64, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn3.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer1.2.bn3.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.conv1.weight - torch.Size([128, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.downsample.0.weight - torch.Size([512, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.downsample.1.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.0.downsample.1.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.1.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.2.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.conv1.weight - torch.Size([128, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn1.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn1.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.conv2.weight - torch.Size([128, 128, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn2.weight - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn2.bias - torch.Size([128]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.conv3.weight - torch.Size([512, 128, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn3.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer2.3.bn3.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.conv1.weight - torch.Size([256, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.downsample.0.weight - torch.Size([1024, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.downsample.1.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.0.downsample.1.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.1.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.2.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.3.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.4.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.conv1.weight - torch.Size([256, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn1.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn1.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.conv2.weight - torch.Size([256, 256, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn2.weight - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn2.bias - torch.Size([256]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.conv3.weight - torch.Size([1024, 256, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn3.weight - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer3.5.bn3.bias - torch.Size([1024]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.conv1.weight - torch.Size([512, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.downsample.0.weight - torch.Size([2048, 1024, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.downsample.1.weight - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.0.downsample.1.bias - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.1.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.conv1.weight - torch.Size([512, 2048, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn1.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn1.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.conv2.weight - torch.Size([512, 512, 3, 3]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn2.weight - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn2.bias - torch.Size([512]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.conv3.weight - torch.Size([2048, 512, 1, 1]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn3.weight - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+backbone.layer4.2.bn3.bias - torch.Size([2048]): 
+PretrainedInit: load from torchvision://resnet50 
+
+neck.lateral_convs.0.conv.weight - torch.Size([256, 256, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of MaskRCNN  
+
+neck.lateral_convs.1.conv.weight - torch.Size([256, 512, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of MaskRCNN  
+
+neck.lateral_convs.2.conv.weight - torch.Size([256, 1024, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of MaskRCNN  
+
+neck.lateral_convs.3.conv.weight - torch.Size([256, 2048, 1, 1]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.lateral_convs.3.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of MaskRCNN  
+
+neck.fpn_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of MaskRCNN  
+
+neck.fpn_convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of MaskRCNN  
+
+neck.fpn_convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of MaskRCNN  
+
+neck.fpn_convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+neck.fpn_convs.3.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of MaskRCNN  
+
+rpn_head.rpn_conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+rpn_head.rpn_conv.bias - torch.Size([256]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+rpn_head.rpn_cls.weight - torch.Size([3, 256, 1, 1]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+rpn_head.rpn_cls.bias - torch.Size([3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+rpn_head.rpn_reg.weight - torch.Size([12, 256, 1, 1]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+rpn_head.rpn_reg.bias - torch.Size([12]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+roi_head.bbox_head.fc_cls.weight - torch.Size([2, 1024]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+roi_head.bbox_head.fc_cls.bias - torch.Size([2]): 
+NormalInit: mean=0, std=0.01, bias=0 
+
+roi_head.bbox_head.fc_reg.weight - torch.Size([4, 1024]): 
+NormalInit: mean=0, std=0.001, bias=0 
+
+roi_head.bbox_head.fc_reg.bias - torch.Size([4]): 
+NormalInit: mean=0, std=0.001, bias=0 
+
+roi_head.bbox_head.shared_fcs.0.weight - torch.Size([1024, 12544]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+roi_head.bbox_head.shared_fcs.0.bias - torch.Size([1024]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+roi_head.bbox_head.shared_fcs.1.weight - torch.Size([1024, 1024]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+roi_head.bbox_head.shared_fcs.1.bias - torch.Size([1024]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+
+roi_head.mask_head.convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+roi_head.mask_head.convs.0.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of MaskRCNN  
+
+roi_head.mask_head.convs.1.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+roi_head.mask_head.convs.1.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of MaskRCNN  
+
+roi_head.mask_head.convs.2.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+roi_head.mask_head.convs.2.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of MaskRCNN  
+
+roi_head.mask_head.convs.3.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+roi_head.mask_head.convs.3.conv.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of MaskRCNN  
+
+roi_head.mask_head.upsample.weight - torch.Size([256, 256, 2, 2]): 
+Initialized by user-defined `init_weights` in FCNMaskHead  
+
+roi_head.mask_head.upsample.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in FCNMaskHead  
+
+roi_head.mask_head.conv_logits.weight - torch.Size([1, 256, 1, 1]): 
+Initialized by user-defined `init_weights` in FCNMaskHead  
+
+roi_head.mask_head.conv_logits.bias - torch.Size([1]): 
+Initialized by user-defined `init_weights` in FCNMaskHead  
+2023-02-08 11:38:23,956 - mmdet - INFO - Automatic scaling of learning rate (LR) has been disabled.
+2023-02-08 11:38:23,962 - mmdet - INFO - load checkpoint from local path: pretrained/mask_rcnn_r50_fpn_1x_coco_20200205-d4b0c5d6.pth
+2023-02-08 11:38:24,186 - mmdet - WARNING - The model and loaded state dict do not match exactly
+
+size mismatch for roi_head.bbox_head.fc_cls.weight: copying a param with shape torch.Size([81, 1024]) from checkpoint, the shape in current model is torch.Size([2, 1024]).
+size mismatch for roi_head.bbox_head.fc_cls.bias: copying a param with shape torch.Size([81]) from checkpoint, the shape in current model is torch.Size([2]).
+size mismatch for roi_head.bbox_head.fc_reg.weight: copying a param with shape torch.Size([320, 1024]) from checkpoint, the shape in current model is torch.Size([4, 1024]).
+size mismatch for roi_head.bbox_head.fc_reg.bias: copying a param with shape torch.Size([320]) from checkpoint, the shape in current model is torch.Size([4]).
+size mismatch for roi_head.mask_head.conv_logits.weight: copying a param with shape torch.Size([80, 256, 1, 1]) from checkpoint, the shape in current model is torch.Size([1, 256, 1, 1]).
+size mismatch for roi_head.mask_head.conv_logits.bias: copying a param with shape torch.Size([80]) from checkpoint, the shape in current model is torch.Size([1]).
+2023-02-08 11:38:24,196 - mmdet - INFO - Start running, host: root@autodl-container-85b211b6ac-3e1bc24f, work_dir: /root/mmdetection/new_mrcnn
+2023-02-08 11:38:24,196 - mmdet - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) CheckpointHook                     
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) NumClassCheckHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) OptimizerHook                      
+(NORMAL      ) CheckpointHook                     
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) CheckpointHook                     
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_epoch:
+(NORMAL      ) NumClassCheckHook                  
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_epoch:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_run:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+2023-02-08 11:38:24,197 - mmdet - INFO - workflow: [('train', 1)], max: 10 epochs
+2023-02-08 11:38:24,197 - mmdet - INFO - Checkpoints will be saved to /root/mmdetection/new_mrcnn by HardDiskBackend.
+2023-02-08 11:38:49,526 - mmdet - INFO - Evaluating bbox...
+2023-02-08 11:38:49,683 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.091
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.139
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.097
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.003
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.127
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.128
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.656
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.656
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.656
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.100
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.575
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.714
+
+2023-02-08 11:38:49,683 - mmdet - INFO - Evaluating segm...
+2023-02-08 11:38:49,887 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.110
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.139
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.127
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.001
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.079
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.379
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.758
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.758
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.758
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.100
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.633
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.836
+
+2023-02-08 11:38:49,889 - mmdet - INFO - Exp name: mask_rcnn_r50_fpn_1x_ballon.py
+2023-02-08 11:38:49,889 - mmdet - INFO - Epoch(val) [1][13]	bbox_mAP: 0.0908, bbox_mAP_50: 0.1390, bbox_mAP_75: 0.0971, bbox_mAP_s: 0.0029, bbox_mAP_m: 0.1269, bbox_mAP_l: 0.1279, bbox_mAP_copypaste: 0.0908 0.1390 0.0971 0.0029 0.1269 0.1279, segm_mAP: 0.1105, segm_mAP_50: 0.1390, segm_mAP_75: 0.1267, segm_mAP_s: 0.0009, segm_mAP_m: 0.0789, segm_mAP_l: 0.3793, segm_mAP_copypaste: 0.1105 0.1390 0.1267 0.0009 0.0789 0.3793
+2023-02-08 11:39:04,778 - mmdet - INFO - Saving checkpoint at 2 epochs
+2023-02-08 11:39:13,899 - mmdet - INFO - Evaluating bbox...
+2023-02-08 11:39:14,058 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.638
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.858
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.830
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.013
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.613
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.685
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.712
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.712
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.712
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.050
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.717
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.747
+
+2023-02-08 11:39:14,058 - mmdet - INFO - Evaluating segm...
+2023-02-08 11:39:14,258 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.734
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.854
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.811
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.020
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.664
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.792
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.840
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.840
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.840
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.550
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.833
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.858
+
+2023-02-08 11:39:14,260 - mmdet - INFO - Exp name: mask_rcnn_r50_fpn_1x_ballon.py
+2023-02-08 11:39:14,260 - mmdet - INFO - Epoch(val) [2][13]	bbox_mAP: 0.6383, bbox_mAP_50: 0.8583, bbox_mAP_75: 0.8296, bbox_mAP_s: 0.0126, bbox_mAP_m: 0.6127, bbox_mAP_l: 0.6851, bbox_mAP_copypaste: 0.6383 0.8583 0.8296 0.0126 0.6127 0.6851, segm_mAP: 0.7342, segm_mAP_50: 0.8538, segm_mAP_75: 0.8110, segm_mAP_s: 0.0200, segm_mAP_m: 0.6643, segm_mAP_l: 0.7919, segm_mAP_copypaste: 0.7342 0.8538 0.8110 0.0200 0.6643 0.7919
+2023-02-08 11:39:34,168 - mmdet - INFO - Evaluating bbox...
+2023-02-08 11:39:34,248 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.692
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.859
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.810
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.056
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.651
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.736
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.784
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.784
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.784
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.250
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.767
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.819
+
+2023-02-08 11:39:34,248 - mmdet - INFO - Evaluating segm...
+2023-02-08 11:39:34,354 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.764
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.855
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.843
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.059
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.671
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.828
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.856
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.856
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.856
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.500
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.833
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.883
+
+2023-02-08 11:39:34,356 - mmdet - INFO - Exp name: mask_rcnn_r50_fpn_1x_ballon.py
+2023-02-08 11:39:34,356 - mmdet - INFO - Epoch(val) [3][13]	bbox_mAP: 0.6915, bbox_mAP_50: 0.8590, bbox_mAP_75: 0.8097, bbox_mAP_s: 0.0563, bbox_mAP_m: 0.6506, bbox_mAP_l: 0.7364, bbox_mAP_copypaste: 0.6915 0.8590 0.8097 0.0563 0.6506 0.7364, segm_mAP: 0.7636, segm_mAP_50: 0.8545, segm_mAP_75: 0.8434, segm_mAP_s: 0.0586, segm_mAP_m: 0.6709, segm_mAP_l: 0.8280, segm_mAP_copypaste: 0.7636 0.8545 0.8434 0.0586 0.6709 0.8280
+2023-02-08 11:39:49,288 - mmdet - INFO - Saving checkpoint at 4 epochs
+2023-02-08 11:39:53,431 - mmdet - INFO - Evaluating bbox...
+2023-02-08 11:39:53,478 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.680
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.885
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.851
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.065
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.605
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.732
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.748
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.748
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.748
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.350
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.717
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.781
+
+2023-02-08 11:39:53,478 - mmdet - INFO - Evaluating segm...
+2023-02-08 11:39:53,541 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.778
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.885
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.872
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.062
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.701
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.830
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.838
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.838
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.838
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.450
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.808
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.869
+
+2023-02-08 11:39:53,542 - mmdet - INFO - Exp name: mask_rcnn_r50_fpn_1x_ballon.py
+2023-02-08 11:39:53,542 - mmdet - INFO - Epoch(val) [4][13]	bbox_mAP: 0.6795, bbox_mAP_50: 0.8852, bbox_mAP_75: 0.8515, bbox_mAP_s: 0.0650, bbox_mAP_m: 0.6045, bbox_mAP_l: 0.7319, bbox_mAP_copypaste: 0.6795 0.8852 0.8515 0.0650 0.6045 0.7319, segm_mAP: 0.7778, segm_mAP_50: 0.8852, segm_mAP_75: 0.8720, segm_mAP_s: 0.0616, segm_mAP_m: 0.7015, segm_mAP_l: 0.8298, segm_mAP_copypaste: 0.7778 0.8852 0.8720 0.0616 0.7015 0.8298
+2023-02-08 11:40:11,191 - mmdet - INFO - Evaluating bbox...
+2023-02-08 11:40:11,226 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.748
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.900
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.862
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.025
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.708
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.794
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.804
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.804
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.804
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.100
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.808
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.842
+
+2023-02-08 11:40:11,227 - mmdet - INFO - Evaluating segm...
+2023-02-08 11:40:11,276 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.803
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.889
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.883
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.017
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.733
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.862
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.846
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.846
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.846
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.100
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.842
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.889
+
+2023-02-08 11:40:11,277 - mmdet - INFO - Exp name: mask_rcnn_r50_fpn_1x_ballon.py
+2023-02-08 11:40:11,277 - mmdet - INFO - Epoch(val) [5][13]	bbox_mAP: 0.7475, bbox_mAP_50: 0.8995, bbox_mAP_75: 0.8625, bbox_mAP_s: 0.0252, bbox_mAP_m: 0.7078, bbox_mAP_l: 0.7939, bbox_mAP_copypaste: 0.7475 0.8995 0.8625 0.0252 0.7078 0.7939, segm_mAP: 0.8026, segm_mAP_50: 0.8886, segm_mAP_75: 0.8832, segm_mAP_s: 0.0168, segm_mAP_m: 0.7329, segm_mAP_l: 0.8623, segm_mAP_copypaste: 0.8026 0.8886 0.8832 0.0168 0.7329 0.8623
+2023-02-08 11:40:25,774 - mmdet - INFO - Saving checkpoint at 6 epochs
+2023-02-08 11:40:29,345 - mmdet - INFO - Evaluating bbox...
+2023-02-08 11:40:29,387 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.774
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.918
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.889
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.101
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.741
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.822
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.828
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.828
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.828
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.100
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.867
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.856
+
+2023-02-08 11:40:29,387 - mmdet - INFO - Evaluating segm...
+2023-02-08 11:40:29,434 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.794
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.890
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.890
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.101
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.683
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.857
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.846
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.846
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.846
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.300
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.825
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.883
+
+2023-02-08 11:40:29,435 - mmdet - INFO - Exp name: mask_rcnn_r50_fpn_1x_ballon.py
+2023-02-08 11:40:29,435 - mmdet - INFO - Epoch(val) [6][13]	bbox_mAP: 0.7740, bbox_mAP_50: 0.9175, bbox_mAP_75: 0.8894, bbox_mAP_s: 0.1010, bbox_mAP_m: 0.7407, bbox_mAP_l: 0.8217, bbox_mAP_copypaste: 0.7740 0.9175 0.8894 0.1010 0.7407 0.8217, segm_mAP: 0.7941, segm_mAP_50: 0.8896, segm_mAP_75: 0.8896, segm_mAP_s: 0.1010, segm_mAP_m: 0.6831, segm_mAP_l: 0.8565, segm_mAP_copypaste: 0.7941 0.8896 0.8896 0.1010 0.6831 0.8565
+2023-02-08 11:40:46,802 - mmdet - INFO - Evaluating bbox...
+2023-02-08 11:40:46,843 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.743
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.909
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.881
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.050
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.697
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.795
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.800
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.800
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.800
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.050
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.800
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.842
+
+2023-02-08 11:40:46,843 - mmdet - INFO - Evaluating segm...
+2023-02-08 11:40:46,882 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.802
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.909
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.880
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.151
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.699
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.863
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.846
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.846
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.846
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.150
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.833
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.889
+
+2023-02-08 11:40:46,883 - mmdet - INFO - Exp name: mask_rcnn_r50_fpn_1x_ballon.py
+2023-02-08 11:40:46,883 - mmdet - INFO - Epoch(val) [7][13]	bbox_mAP: 0.7426, bbox_mAP_50: 0.9085, bbox_mAP_75: 0.8809, bbox_mAP_s: 0.0505, bbox_mAP_m: 0.6971, bbox_mAP_l: 0.7954, bbox_mAP_copypaste: 0.7426 0.9085 0.8809 0.0505 0.6971 0.7954, segm_mAP: 0.8017, segm_mAP_50: 0.9085, segm_mAP_75: 0.8797, segm_mAP_s: 0.1515, segm_mAP_m: 0.6988, segm_mAP_l: 0.8632, segm_mAP_copypaste: 0.8017 0.9085 0.8797 0.1515 0.6988 0.8632
+2023-02-08 11:41:01,897 - mmdet - INFO - Saving checkpoint at 8 epochs
+2023-02-08 11:41:05,055 - mmdet - INFO - Evaluating bbox...
+2023-02-08 11:41:05,091 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.758
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.911
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.860
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.050
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.715
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.806
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.812
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.812
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.812
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.050
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.817
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.853
+
+2023-02-08 11:41:05,091 - mmdet - INFO - Evaluating segm...
+2023-02-08 11:41:05,141 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.800
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.916
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.880
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.252
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.700
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.856
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.844
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.844
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.844
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.250
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.817
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.886
+
+2023-02-08 11:41:05,142 - mmdet - INFO - Exp name: mask_rcnn_r50_fpn_1x_ballon.py
+2023-02-08 11:41:05,142 - mmdet - INFO - Epoch(val) [8][13]	bbox_mAP: 0.7579, bbox_mAP_50: 0.9108, bbox_mAP_75: 0.8603, bbox_mAP_s: 0.0505, bbox_mAP_m: 0.7146, bbox_mAP_l: 0.8055, bbox_mAP_copypaste: 0.7579 0.9108 0.8603 0.0505 0.7146 0.8055, segm_mAP: 0.7997, segm_mAP_50: 0.9155, segm_mAP_75: 0.8802, segm_mAP_s: 0.2525, segm_mAP_m: 0.7000, segm_mAP_l: 0.8563, segm_mAP_copypaste: 0.7997 0.9155 0.8802 0.2525 0.7000 0.8563
+2023-02-08 11:41:22,361 - mmdet - INFO - Evaluating bbox...
+2023-02-08 11:41:22,391 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.773
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.920
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.861
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.050
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.764
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.809
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.826
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.826
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.826
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.050
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.867
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.856
+
+2023-02-08 11:41:22,391 - mmdet - INFO - Evaluating segm...
+2023-02-08 11:41:22,426 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.792
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.893
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.883
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.202
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.704
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.849
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.836
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.836
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.836
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.200
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.817
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.878
+
+2023-02-08 11:41:22,427 - mmdet - INFO - Exp name: mask_rcnn_r50_fpn_1x_ballon.py
+2023-02-08 11:41:22,427 - mmdet - INFO - Epoch(val) [9][13]	bbox_mAP: 0.7730, bbox_mAP_50: 0.9203, bbox_mAP_75: 0.8609, bbox_mAP_s: 0.0505, bbox_mAP_m: 0.7643, bbox_mAP_l: 0.8094, bbox_mAP_copypaste: 0.7730 0.9203 0.8609 0.0505 0.7643 0.8094, segm_mAP: 0.7919, segm_mAP_50: 0.8931, segm_mAP_75: 0.8826, segm_mAP_s: 0.2020, segm_mAP_m: 0.7044, segm_mAP_l: 0.8487, segm_mAP_copypaste: 0.7919 0.8931 0.8826 0.2020 0.7044 0.8487
+2023-02-08 11:41:37,374 - mmdet - INFO - Saving checkpoint at 10 epochs
+2023-02-08 11:41:40,690 - mmdet - INFO - Evaluating bbox...
+2023-02-08 11:41:40,722 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.766
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.918
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.879
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.101
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.737
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.809
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.820
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.820
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.820
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.100
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.842
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.853
+
+2023-02-08 11:41:40,722 - mmdet - INFO - Evaluating segm...
+2023-02-08 11:41:40,767 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.809
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.918
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.879
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.151
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.714
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.871
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.850
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.850
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.850
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.150
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.825
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.897
+
+2023-02-08 11:41:40,768 - mmdet - INFO - Exp name: mask_rcnn_r50_fpn_1x_ballon.py
+2023-02-08 11:41:40,768 - mmdet - INFO - Epoch(val) [10][13]	bbox_mAP: 0.7659, bbox_mAP_50: 0.9182, bbox_mAP_75: 0.8789, bbox_mAP_s: 0.1010, bbox_mAP_m: 0.7373, bbox_mAP_l: 0.8090, bbox_mAP_copypaste: 0.7659 0.9182 0.8789 0.1010 0.7373 0.8090, segm_mAP: 0.8090, segm_mAP_50: 0.9182, segm_mAP_75: 0.8789, segm_mAP_s: 0.1515, segm_mAP_m: 0.7145, segm_mAP_l: 0.8707, segm_mAP_copypaste: 0.8090 0.9182 0.8789 0.1515 0.7145 0.8707
